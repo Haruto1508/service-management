@@ -8,8 +8,8 @@ import {
   Clock,
   Phone,
   CheckCircle2,
-  XCircle,
   Inbox,
+  AlertCircle,
 } from 'lucide-react';
 import { fetchOrders, updateOrderStatus } from '../utils/googleSheets';
 
@@ -41,50 +41,6 @@ function formatDate(isoStr) {
   }
 }
 
-// Demo/fallback data shown when no script URL is configured
-const DEMO_ORDERS = [
-  {
-    rowIndex: 2,
-    tenCoSo: 'Quán Cà Phê Bình Minh',
-    nguoiDaiDien: 'Trần Văn An',
-    soDienThoai: '0901 234 567',
-    email: 'binhminh@gmail.com',
-    goiDangKy: 'Lan Tỏa',
-    timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
-    trangThai: 'Chờ xử lý',
-  },
-  {
-    rowIndex: 3,
-    tenCoSo: 'Tiệm Nail Ngọc Trinh',
-    nguoiDaiDien: 'Nguyễn Ngọc Trinh',
-    soDienThoai: '0912 345 678',
-    email: 'ngoctrinh.nail@gmail.com',
-    goiDangKy: 'Khởi Sắc',
-    timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
-    trangThai: 'Đang liên hệ',
-  },
-  {
-    rowIndex: 4,
-    tenCoSo: 'Nhà Hàng Lẩu Đỏ',
-    nguoiDaiDien: 'Lê Quang Minh',
-    soDienThoai: '0933 456 789',
-    email: 'laudo.nha@gmail.com',
-    goiDangKy: 'Toàn Diện',
-    timestamp: new Date(Date.now() - 86400000 * 8).toISOString(),
-    trangThai: 'Đã ký HĐ',
-  },
-  {
-    rowIndex: 5,
-    tenCoSo: 'Spa Hoa Sen',
-    nguoiDaiDien: 'Phạm Thị Hoa',
-    soDienThoai: '0944 567 890',
-    email: 'spahoa.sen@gmail.com',
-    goiDangKy: 'Lan Tỏa',
-    timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
-    trangThai: 'Chờ xử lý',
-  },
-];
-
 export default function AdminDashboard({ session, onLogout }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,16 +58,10 @@ export default function AdminDashboard({ session, onLogout }) {
 
     try {
       const data = await fetchOrders();
-      setOrders(data);
+      setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
-      // Fall back to demo data if no URL configured
-      if (err.message.includes('chưa được cấu hình')) {
-        setOrders(DEMO_ORDERS);
-        setError('⚠️ Chưa cấu hình VITE_GOOGLE_SCRIPT_URL — đang hiển thị dữ liệu mẫu.');
-      } else {
-        setError(err.message);
-        setOrders(DEMO_ORDERS);
-      }
+      setOrders([]);
+      setError(err.message || 'Không thể tải danh sách đơn đăng ký.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -131,13 +81,8 @@ export default function AdminDashboard({ session, onLogout }) {
           o.rowIndex === order.rowIndex ? { ...o, trangThai: newStatus } : o
         )
       );
-    } catch {
-      // Optimistic update for demo mode
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.rowIndex === order.rowIndex ? { ...o, trangThai: newStatus } : o
-        )
-      );
+    } catch (err) {
+      alert('Cập nhật trạng thái thất bại: ' + (err.message || 'Lỗi mạng'));
     } finally {
       setUpdatingRow(null);
     }
@@ -160,7 +105,8 @@ export default function AdminDashboard({ session, onLogout }) {
       !search ||
       o.tenCoSo?.toLowerCase().includes(search.toLowerCase()) ||
       o.nguoiDaiDien?.toLowerCase().includes(search.toLowerCase()) ||
-      o.soDienThoai?.includes(search);
+      o.soDienThoai?.includes(search) ||
+      o.email?.toLowerCase().includes(search.toLowerCase());
     const matchStatus = !filterStatus || o.trangThai === filterStatus;
     const matchPlan = !filterPlan || o.goiDangKy === filterPlan;
     return matchSearch && matchStatus && matchPlan;
@@ -193,7 +139,7 @@ export default function AdminDashboard({ session, onLogout }) {
               fontWeight: 500,
             }}
           >
-            — Quản Trị
+            — Quản Trị Hệ Thống
           </span>
         </div>
 
@@ -212,10 +158,20 @@ export default function AdminDashboard({ session, onLogout }) {
       {/* Content */}
       <main className="admin-content">
         <div className="admin-page-header">
-          <h1 className="admin-page-title">Danh Sách Đăng Ký</h1>
-          <p className="admin-page-subtitle">
-            Quản lý và cập nhật trạng thái các đơn đăng ký dịch vụ
-          </p>
+          <div>
+            <h1 className="admin-page-title">Danh Sách Đơn Đăng Ký</h1>
+            <p className="admin-page-subtitle">
+              Quản lý và cập nhật tiến độ xử lý các đơn đăng ký dịch vụ từ khách hàng
+            </p>
+          </div>
+          <button
+            className="admin-refresh-btn"
+            onClick={() => loadOrders(true)}
+            disabled={refreshing || loading}
+          >
+            <RefreshCw size={15} className={refreshing ? 'spinning' : ''} />
+            {refreshing ? 'Đang làm mới...' : 'Làm mới'}
+          </button>
         </div>
 
         {/* Warning / Error */}
@@ -224,14 +180,18 @@ export default function AdminDashboard({ session, onLogout }) {
             style={{
               marginBottom: 20,
               padding: '12px 16px',
-              background: '#FFFBEB',
-              border: '1px solid #FEF3C7',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
               borderRadius: 'var(--radius-sm)',
-              fontSize: '0.85rem',
-              color: '#92400E',
+              fontSize: '0.88rem',
+              color: '#991B1B',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
             }}
           >
-            {error}
+            <AlertCircle size={18} />
+            <span>{error}</span>
           </div>
         )}
 
@@ -279,7 +239,7 @@ export default function AdminDashboard({ session, onLogout }) {
         <div className="orders-card">
           <div className="orders-card-header">
             <div className="orders-card-title">
-              Danh Sách Đơn ({filtered.length})
+              Danh Sách Đơn {orders.length > 0 && `(${filtered.length}/${orders.length})`}
             </div>
             <div className="orders-filters">
               {/* Search */}
@@ -288,9 +248,10 @@ export default function AdminDashboard({ session, onLogout }) {
                 <input
                   type="text"
                   className="search-input"
-                  placeholder="Tìm theo tên, SĐT..."
+                  placeholder="Tìm tên cơ sở, SĐT, email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  disabled={orders.length === 0}
                 />
               </div>
 
@@ -299,6 +260,7 @@ export default function AdminDashboard({ session, onLogout }) {
                 className="filter-select"
                 value={filterPlan}
                 onChange={(e) => setFilterPlan(e.target.value)}
+                disabled={orders.length === 0}
               >
                 <option value="">Tất cả gói</option>
                 <option value="Khởi Sắc">Khởi Sắc</option>
@@ -311,22 +273,13 @@ export default function AdminDashboard({ session, onLogout }) {
                 className="filter-select"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
+                disabled={orders.length === 0}
               >
                 <option value="">Tất cả trạng thái</option>
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
-
-              {/* Refresh */}
-              <button
-                className="admin-refresh-btn"
-                onClick={() => loadOrders(true)}
-                disabled={refreshing}
-              >
-                <RefreshCw size={15} className={refreshing ? 'spinning' : ''} />
-                Làm mới
-              </button>
             </div>
           </div>
 
@@ -334,24 +287,54 @@ export default function AdminDashboard({ session, onLogout }) {
             {loading ? (
               <div className="loading-spinner">
                 <div className="spinner" />
-                Đang tải dữ liệu...
+                Đang tải dữ liệu từ Google Sheets...
               </div>
-            ) : filtered.length === 0 ? (
+            ) : orders.length === 0 ? (
+              /* Trường hợp cơ sở dữ liệu chưa có đơn hàng nào */
               <div className="empty-state">
                 <div className="empty-state-icon">
-                  <XCircle size={28} />
+                  <Inbox size={32} />
                 </div>
-                <p className="empty-state-text">Không tìm thấy đơn đăng ký nào</p>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--navy)', marginBottom: 6 }}>
+                  Chưa có đơn hàng nào
+                </h3>
+                <p className="empty-state-text" style={{ maxWidth: 440, margin: '0 auto', color: 'var(--text-muted)' }}>
+                  Hiện tại hệ thống chưa ghi nhận đơn đăng ký nào. Khi có khách hàng gửi form trên website, đơn sẽ tự động xuất hiện tại đây.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
+              /* Trường hợp có đơn nhưng lọc tìm kiếm không ra kết quả */
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Search size={30} />
+                </div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--navy)', marginBottom: 6 }}>
+                  Không tìm thấy đơn đăng ký phù hợp
+                </h3>
+                <p className="empty-state-text" style={{ maxWidth: 400, margin: '0 auto 16px', color: 'var(--text-muted)' }}>
+                  Không có đơn nào khớp với bộ lọc hoặc từ khóa tìm kiếm của bạn.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setSearch('');
+                    setFilterStatus('');
+                    setFilterPlan('');
+                  }}
+                >
+                  Xóa bộ lọc tìm kiếm
+                </button>
               </div>
             ) : (
               <table className="orders-table">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Tên cơ sở</th>
-                    <th>SĐT</th>
+                    <th>Tên cơ sở / Người đại diện</th>
+                    <th>Số điện thoại</th>
                     <th>Email</th>
-                    <th>Gói</th>
+                    <th>Gói đăng ký</th>
                     <th>Ngày đăng ký</th>
                     <th>Trạng thái</th>
                   </tr>
@@ -368,7 +351,9 @@ export default function AdminDashboard({ session, onLogout }) {
                           <div className="order-email">{order.nguoiDaiDien}</div>
                         )}
                       </td>
-                      <td>{order.soDienThoai || '—'}</td>
+                      <td>
+                        <strong>{order.soDienThoai || '—'}</strong>
+                      </td>
                       <td>
                         <span className="order-email">{order.email || '—'}</span>
                       </td>
