@@ -24,7 +24,7 @@ function fmtPrice(n) {
 }
 
 export default function Calculator() {
-  const { openModal } = useOrder();
+  const { goToRegister, openModal } = useOrder();
   const [selectedPlan, setSelectedPlan] = useState('lanToa');
   const [selectedAddons, setSelectedAddons] = useState(new Set());
 
@@ -45,7 +45,15 @@ export default function Calculator() {
   };
 
   const handleRegister = () => {
-    openModal(plan.name);
+    const addonNames = chosenAddons.map((a) => a.name).join(', ');
+    const note = chosenAddons.length > 0
+      ? `[Cấu hình tùy chọn]: Gói ${plan.name} + Dịch vụ thêm: ${addonNames}. Tổng dự toán: ${fmtPrice(totalPrice)}.`
+      : '';
+    if (goToRegister) {
+      goToRegister(plan.name, { note, addonNames, totalPrice });
+    } else {
+      openModal(plan.name);
+    }
   };
 
   return (

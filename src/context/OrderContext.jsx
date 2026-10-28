@@ -1,26 +1,16 @@
 import { createContext, useContext, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const OrderContext = createContext(null);
 
 /**
- * Global context for managing order modal state and toast notifications.
+ * Global context for managing order registration data, navigation and toasts.
  */
 export function OrderProvider({ children }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState('Khởi Sắc');
+  const [customConfig, setCustomConfig] = useState(null);
   const [toasts, setToasts] = useState([]);
-
-  const openModal = useCallback((plan) => {
-    setSelectedPlan(plan);
-    setIsModalOpen(true);
-    document.body.style.overflow = 'hidden';
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedPlan(null);
-    document.body.style.overflow = '';
-  }, []);
 
   const addToast = useCallback((message, type = 'success') => {
     const id = Date.now();
@@ -34,13 +24,27 @@ export function OrderProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const goToRegister = useCallback((plan = 'Khởi Sắc', config = null) => {
+    setSelectedPlan(plan);
+    setCustomConfig(config);
+    const params = new URLSearchParams();
+    if (plan) params.set('plan', plan);
+    navigate(`/register?${params.toString()}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [navigate]);
+
+  // Backward compatibility alias for openModal
+  const openModal = goToRegister;
+
   return (
     <OrderContext.Provider
       value={{
-        isModalOpen,
         selectedPlan,
+        setSelectedPlan,
+        customConfig,
+        setCustomConfig,
+        goToRegister,
         openModal,
-        closeModal,
         toasts,
         addToast,
         removeToast,

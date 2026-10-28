@@ -69,7 +69,7 @@ export default function Footer() {
               </div>
               <div className="footer-contact-item">
                 <MapPin size={16} className="footer-contact-icon" />
-                <span>123 Đường Nguyễn Huệ, Q.1, TP.HCM</span>
+                <span>Đường Văn Cừ Nối Dài, FPT University, Cần Thơ</span>
               </div>
             </div>
           </div>

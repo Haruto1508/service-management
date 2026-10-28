@@ -5,7 +5,6 @@ import ComparisonTable from '../components/ComparisonTable';
 import Calculator from '../components/Calculator';
 import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
-import OrderModal from '../components/OrderModal';
 
 export default function HomePage() {
   return (
@@ -19,7 +18,6 @@ export default function HomePage() {
         <FAQ />
       </main>
       <Footer />
-      <OrderModal />
     </>
   );
 }

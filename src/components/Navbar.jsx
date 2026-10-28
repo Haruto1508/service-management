@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { TrendingUp, Menu, X } from 'lucide-react';
 import { useOrder } from '../context/OrderContext';
 
@@ -11,7 +12,9 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { openModal } = useOrder();
+  const { goToRegister, openModal } = useOrder();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -23,11 +26,23 @@ export default function Navbar() {
 
   const handleNavClick = (href) => {
     setMobileOpen(false);
+    if (location.pathname !== '/') {
+      navigate('/' + href);
+      return;
+    }
     const el = document.querySelector(href);
     if (el) {
       const offset = 80;
       const top = el.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
+  const handleRegisterClick = (plan = 'Khởi Sắc') => {
+    if (goToRegister) {
+      goToRegister(plan);
+    } else {
+      openModal(plan);
     }
   };
 
@@ -37,10 +52,14 @@ export default function Navbar() {
         <div className="container">
           <div className="navbar-inner">
             {/* Logo */}
-            <a
-              href="#hero"
+            <Link
+              to="/"
               className="navbar-logo"
-              onClick={(e) => { e.preventDefault(); handleNavClick('#hero'); }}
+              onClick={() => {
+                if (location.pathname === '/') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
             >
               <div className="logo-icon">
                 <TrendingUp size={20} strokeWidth={2.5} />
@@ -48,7 +67,7 @@ export default function Navbar() {
               <span>
                 Local <span className="logo-text-lift">Lift</span>
               </span>
-            </a>
+            </Link>
 
             {/* Desktop links */}
             <div className="navbar-links">
@@ -65,7 +84,7 @@ export default function Navbar() {
 
             {/* CTA */}
             <div className="navbar-cta">
-              <button className="btn btn-primary btn-sm" onClick={() => openModal('Khởi Sắc')}>
+              <button className="btn btn-primary btn-sm" onClick={() => handleRegisterClick('Lan Tỏa')}>
                 Đăng ký ngay
               </button>
             </div>
@@ -128,7 +147,7 @@ export default function Navbar() {
           <button
             className="btn btn-primary btn-full"
             style={{ marginTop: 12 }}
-            onClick={() => { openModal('Khởi Sắc'); setMobileOpen(false); }}
+            onClick={() => { handleRegisterClick('Lan Tỏa'); setMobileOpen(false); }}
           >
             Đăng ký ngay
           </button>
