@@ -83,28 +83,6 @@ export default function HeroSection() {
           {/* Right: Visual card */}
           <div className="hero-visual">
             <div className="hero-card-stack">
-              {/* Floating badge 1: Top Right */}
-              <div className="hero-card-float hero-card-float-1">
-                <div className="float-icon float-icon-green">
-                  <CheckCircle2 size={18} />
-                </div>
-                <div className="float-text">
-                  <div className="float-title">Đã kích hoạt!</div>
-                  <div className="float-desc">Kênh Số & Fanpage</div>
-                </div>
-              </div>
-
-              {/* Floating badge 2: Bottom Left */}
-              <div className="hero-card-float hero-card-float-2">
-                <div className="float-icon float-icon-amber">
-                  <BarChart3 size={18} />
-                </div>
-                <div className="float-text">
-                  <div className="float-title">+247% tiếp cận</div>
-                  <div className="float-desc">Khách địa phương</div>
-                </div>
-              </div>
-
               {/* Main card */}
               <div className="hero-card hero-card-main">
                 <div className="hero-card-header">
