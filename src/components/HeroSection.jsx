@@ -1,8 +1,16 @@
-import { TrendingUp, Zap, BarChart3, Star, CheckCircle2, ArrowRight } from 'lucide-react';
+import { TrendingUp, Zap, BarChart3, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useOrder } from '../context/OrderContext';
 
 export default function HeroSection() {
-  const { openModal } = useOrder();
+  const { goToRegister, openModal } = useOrder();
+
+  const handleRegister = (planName = 'Lan Tỏa') => {
+    if (goToRegister) {
+      goToRegister(planName);
+    } else {
+      openModal(planName);
+    }
+  };
 
   const scrollToSection = (id) => {
     const el = document.querySelector(id);
@@ -23,27 +31,26 @@ export default function HeroSection() {
           {/* Left: Text content */}
           <div className="hero-text">
             <div className="hero-badge">
-              <Star size={14} fill="currentColor" />
-              Chương trình Chuyển đổi Số cho Doanh nghiệp Địa phương
+              <Sparkles size={14} />
+              <span>Chương trình đồng hành chuyển đổi số</span>
             </div>
 
             <h1 className="hero-title">
               Nâng Tầm{' '}
               <span className="highlight">Thương Hiệu</span>
               <br />
-              Địa Phương Của Bạn
+              Cơ Sở Địa Phương
             </h1>
 
             <p className="hero-desc">
-              Local Lift giúp các cơ sở kinh doanh địa phương chuyển đổi số toàn diện —
-              từ website, mạng xã hội đến quản lý đặt lịch — với chi phí hợp lý và
-              đội ngũ hỗ trợ tận tâm.
+              Chuẩn hóa hình ảnh, thiết kế bao bì chuyên nghiệp, phủ sóng thương hiệu
+              trên mạng xã hội và đột phá doanh thu với chi phí ưu đãi đặc biệt từ Local Lift.
             </p>
 
             <div className="hero-actions">
               <button
                 className="btn btn-primary btn-lg"
-                onClick={() => openModal('Khởi Sắc')}
+                onClick={() => handleRegister('Lan Tỏa')}
               >
                 <Zap size={18} />
                 Đăng ký ngay hôm nay
@@ -52,7 +59,7 @@ export default function HeroSection() {
                 className="btn btn-outline-white btn-lg"
                 onClick={() => scrollToSection('#pricing')}
               >
-                Xem gói dịch vụ
+                Xem chi tiết gói dịch vụ
                 <ArrowRight size={18} />
               </button>
             </div>
@@ -63,12 +70,12 @@ export default function HeroSection() {
                 <span className="hero-stat-label">Cơ sở đã tin dùng</span>
               </div>
               <div className="hero-stat">
-                <span className="hero-stat-number">98%</span>
-                <span className="hero-stat-label">Hài lòng sau dùng thử</span>
+                <span className="hero-stat-number">53%</span>
+                <span className="hero-stat-label">Hỗ trợ tối đa</span>
               </div>
               <div className="hero-stat">
                 <span className="hero-stat-number">3×</span>
-                <span className="hero-stat-label">Tăng trưởng trung bình</span>
+                <span className="hero-stat-label">Tăng trưởng tiếp cận</span>
               </div>
             </div>
           </div>
@@ -76,74 +83,80 @@ export default function HeroSection() {
           {/* Right: Visual card */}
           <div className="hero-visual">
             <div className="hero-card-stack">
-              {/* Floating badges */}
+              {/* Floating badge 1: Top Right */}
               <div className="hero-card-float hero-card-float-1">
                 <div className="float-icon float-icon-green">
-                  <CheckCircle2 size={16} />
+                  <CheckCircle2 size={18} />
                 </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>Đã kích hoạt!</div>
-                  <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.55)' }}>
-                    Website + Fanpage
-                  </div>
+                <div className="float-text">
+                  <div className="float-title">Đã kích hoạt!</div>
+                  <div className="float-desc">Kênh Số & Fanpage</div>
                 </div>
               </div>
 
+              {/* Floating badge 2: Bottom Left */}
               <div className="hero-card-float hero-card-float-2">
                 <div className="float-icon float-icon-amber">
-                  <BarChart3 size={16} />
+                  <BarChart3 size={18} />
                 </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>+247% lượt xem</div>
-                  <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.55)' }}>
-                    Trong 30 ngày đầu
-                  </div>
+                <div className="float-text">
+                  <div className="float-title">+247% tiếp cận</div>
+                  <div className="float-desc">Khách địa phương</div>
                 </div>
               </div>
 
               {/* Main card */}
               <div className="hero-card hero-card-main">
                 <div className="hero-card-header">
-                  <div className="hero-card-icon">
-                    <TrendingUp size={22} color="white" />
+                  <div className="hero-card-header-left">
+                    <div className="hero-card-icon">
+                      <TrendingUp size={24} color="white" />
+                    </div>
+                    <div>
+                      <div className="hero-card-title">Gói Lan Tỏa</div>
+                      <div className="hero-card-subtitle">Phù hợp cơ sở cần bứt phá trên MXH</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="hero-card-title">Gói Lan Tỏa</div>
-                    <div className="hero-card-subtitle">Dành cho cơ sở đang phát triển</div>
-                  </div>
+                  <span className="hero-card-badge-pill">Bán Chạy Nhất</span>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: '2rem',
-                    fontWeight: 900,
-                    color: 'white',
-                    marginBottom: 4,
-                  }}
-                >
-                  <span style={{ fontSize: '1rem', color: 'var(--amber)' }}>₫</span>
-                  5,000,000
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: 20 }}>
-                  /tháng đầu tiên
+                {/* Price Display */}
+                <div className="hero-pricing-box">
+                  <div className="hero-price-line">
+                    <span className="hero-price-value">5.000.000</span>
+                    <span className="hero-price-currency">VNĐ</span>
+                  </div>
+                  <div className="hero-price-sub">
+                    <del className="hero-price-del">8.000.000 VNĐ</del>
+                    <span className="hero-price-save">Quỹ hỗ trợ 38%</span>
+                  </div>
                 </div>
 
                 <div className="hero-feature-list">
                   {[
-                    'Website chuyên nghiệp',
-                    'Quản lý Fanpage & TikTok',
-                    '20 bài đăng/tháng',
-                    'Hệ thống đặt lịch online',
-                    'Hỗ trợ 24/7',
+                    'Chụp ảnh sản phẩm (10 ảnh concept)',
+                    '2 Video Short-form xu hướng TikTok / Reels',
+                    'Thiết lập & tối ưu Fanpage + TikTok',
+                    'Vận hành nội dung & tương tác (2 tuần)',
+                    'Báo cáo Reach/Engagement sau chiến dịch',
                   ].map((item) => (
                     <div className="hero-feature-item" key={item}>
                       <div className="hero-feature-check">
-                        <CheckCircle2 size={12} color="#F97316" />
+                        <CheckCircle2 size={14} color="#F97316" />
                       </div>
-                      {item}
+                      <span>{item}</span>
                     </div>
                   ))}
                 </div>
+
+                <button
+                  type="button"
+                  className="btn btn-primary btn-full hero-card-cta"
+                  onClick={() => handleRegister('Lan Tỏa')}
+                >
+                  <Zap size={16} />
+                  Đăng Ký Gói Lan Tỏa
+                </button>
               </div>
             </div>
           </div>
