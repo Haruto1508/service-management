@@ -66,7 +66,7 @@ export default function HeroSection() {
 
             <div className="hero-stats">
               <div className="hero-stat">
-                <span className="hero-stat-number">500+</span>
+                <span className="hero-stat-number">15+</span>
                 <span className="hero-stat-label">Cơ sở đã tin dùng</span>
               </div>
               <div className="hero-stat">
